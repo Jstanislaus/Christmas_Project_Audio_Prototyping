@@ -1,0 +1,30 @@
+# PlatformIO
+.pio/
+
+# ESP-IDF build output
+build/
+sdkconfig
+sdkconfig.old
+sdkconfig.defaults.old
+
+# ESP-IDF generated files
+managed_components/
+
+# Compiled files
+*.o
+*.a
+*.elf
+*.bin
+*.hex
+*.map
+
+# IDE/editor
+.vscode/
+.idea/
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+
+.pio
