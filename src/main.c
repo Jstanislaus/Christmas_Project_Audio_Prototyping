@@ -61,28 +61,11 @@ void app_main(void)
     NUM_SAMPLES
     );
 
-    // printf("First coefficient: %.6f\n", window[0]);
-    // printf("Middle coefficient: %.6f\n", window[NUM_SAMPLES / 2]);
-    // printf("Last coefficient: %.6f\n", window[NUM_SAMPLES - 1]);
-
-    // printf("First windowed sample: %.2f\n", windowed_samples[0]);
-    // printf("Middle windowed sample: %.2f\n", windowed_samples[NUM_SAMPLES / 2]);
-    // printf("Last windowed sample: %.2f\n", windowed_samples[NUM_SAMPLES - 1]);
-
     prepare_fft_input(
         windowed_samples,
         fft_buffer,
         NUM_SAMPLES
     );
-
-    // printf("First real: %.2f\n", fft_buffer[0]);
-    // printf("First imaginary: %.2f\n", fft_buffer[1]);
-
-    // printf("Second real: %.2f\n", fft_buffer[2]);
-    // printf("Second imaginary: %.2f\n", fft_buffer[3]);
-
-    // printf("Third real: %.2f\n", fft_buffer[4]);
-    // printf("Third imaginary: %.2f\n", fft_buffer[5]);
 
 
     perform_fft(fft_buffer, NUM_SAMPLES);
