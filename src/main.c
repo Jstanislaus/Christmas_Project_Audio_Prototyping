@@ -32,6 +32,28 @@ static void analyse_wav_file(FILE *file){
 
     wav_status_t status = wav_parse_header(file, &header);
 
+
+    // Explicitly seek to audio data
+    fseek(file, 44, SEEK_SET);
+
+    ESP_LOGI(TAG, "Position after seeking: %ld", ftell(file));
+
+    // Read first 10 samples directly
+    int16_t test_samples[10];
+
+    size_t samples_read = fread(
+        test_samples,
+        sizeof(int16_t),
+        10,
+        file
+    );
+
+    ESP_LOGI(TAG, "Read %u samples", (unsigned int)samples_read);
+
+    for (int i = 0; i < samples_read; i++) {
+        ESP_LOGI(TAG, "Sample %d: %d", i, test_samples[i]);
+    }
+
     if (status!=WAV_OK){
         ESP_LOGE(TAG,"WAV parsing failed: %d",status);
         return;
@@ -66,6 +88,10 @@ static void analyse_wav_file(FILE *file){
     for(size_t frame=0;frame<total_frames;frame++){
         // Read 512 PCM samples
         size_t samples_read = fread(samples, sizeof(int16_t),NUM_SAMPLES,file);
+        if(frame==0){
+        for (int i = 0; i < 10; i++) {
+        ESP_LOGI(TAG, "Sample %d: %d", i, samples[i]);
+        }}
 
         if(samples_read!=NUM_SAMPLES){
             ESP_LOGE(TAG,"Failed to read audio frame %u",(unsigned int)frame);
@@ -95,9 +121,12 @@ static void analyse_wav_file(FILE *file){
         float frequency_resolution=(float)header.sample_rate/NUM_SAMPLES;
 
         float peak_frequency = peak_bin*frequency_resolution;
+        if (rms < 20.0f) {
+            peak_frequency = 0.0f;
+        }   
 
         if(frame%10==0){
-            ESP_LOGI(TAG,"Frame %u | RMS %.2f | Peak 5.2f Hz",(unsigned int)frame,rms,peak_frequency);
+            ESP_LOGI(TAG,"Frame %u | RMS %.2f | Peak %.2f Hz",(unsigned int)frame,rms,peak_frequency);
         }
     }
     ESP_LOGI(TAG, "WAV analysis complete");
@@ -106,8 +135,9 @@ static void analyse_wav_file(FILE *file){
 void app_main(void)
 {
 
-    ESP_LOGI(TAG,"Starting SD card test");
-    // 1. Initialise and mount SD card
+    ESP_LOGI(TAG,"Starting audio analysis");
+
+    // Initialise SD card
     esp_err_t ret = sd_card_init();
 
     if(ret!=ESP_OK){
@@ -115,26 +145,7 @@ void app_main(void)
         return;
     }
 
-    // 2. List files on SD card
-    DIR *dir = opendir(SD_CARD_MOUNT_POINT);
-
-    if(dir==NULL){
-        ESP_LOGE(TAG,"Could not open SD card directory");
-        return;
-    }
-
-    struct dirent *entry;
-
-    ESP_LOGI(TAG,"Files on SD card:");
-
-    while ((entry=readdir(dir))!=NULL){
-        ESP_LOGI(TAG," %s",entry->d_name);
-    }
-
-    closedir(dir);
-
-
-    // 3. Open WAV file
+    // Open WAV file
     FILE *file = fopen("/sdcard/TEST_A~1.WAV","rb");
 
     if(file==NULL){
@@ -142,26 +153,14 @@ void app_main(void)
         return;
     }
 
-    ESP_LOGI(TAG,"Successfully opened WAV file!");
+    ESP_LOGI(TAG,"Starting WAV analysis");
 
-    // 4. Read the first 12 bytes
+    // Parse WAV and perform FFT
+    analyse_wav_file(file);
 
-    wav_header_t header;
-
-    wav_status_t status = wav_parse_header(file, &header);
-
-    if(status!=WAV_OK){
-        ESP_LOGE(TAG,"WAV parsing failed: %d", status);
-        fclose(file);
-        return;
-    }
-
-    ESP_LOGI(TAG,"WAV successfully parsed!");
-    ESP_LOGI(TAG,"Sample rate: %lu Hz", (unsigned long)header.sample_rate);
-    ESP_LOGI(TAG,"Channels: %u", header.num_channels);
-    ESP_LOGI(TAG,"Bits per sample: %u", header.bits_per_sample);
-    ESP_LOGI(TAG,"Audio data size: %lu bytes",(unsigned long)header.data_size);
     fclose(file);
+
+    ESP_LOGI(TAG,"Audio analysis finished");
 
 
 }
