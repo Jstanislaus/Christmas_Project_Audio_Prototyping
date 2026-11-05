@@ -15,6 +15,6 @@ dependencies:
     version: 5.5.0
 direct_dependencies:
 - espressif/esp-dsp
-manifest_hash: 45c43df1287d9eeb8f44b6ea6923d9f2c45e9f6f8a9f0f73246c98026bf5afae
+manifest_hash: ce6daa4e46fd8eda0627e05e68a27c6caf502b0dbba250b34a43b8b80f4bf7b6
 target: esp32s3
 version: 2.0.0

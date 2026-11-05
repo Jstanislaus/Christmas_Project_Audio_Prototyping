@@ -4,6 +4,7 @@
 #include <string.h>
 #include <limits.h>
 
+
 static uint16_t read_le16(const uint8_t *buffer){
     return (uint16_t)((uint16_t)buffer[0] | ((uint16_t)buffer[1]<<8));
 }
@@ -170,6 +171,10 @@ wav_status_t wav_parse_header(
         printf("Successfully moved to offset: %ld\n", ftell(file));
 
     }
+
+    if (header->block_align == 0)
+    return WAV_ERR_INVALID_RIFF;
+
     if (header->data_size % header->block_align != 0)
         return WAV_ERR_INVALID_RIFF;
 
